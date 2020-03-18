@@ -1,39 +1,43 @@
 import update from "immutability-helper";
 
-const initialState = {
-  isFetching: false,
-  list: []
-};
-
-export function getNextGameReducer(state = initialState, action) {
-  console.log(state.list.length);
-
+export function getNextGameReducer(state = [], action) {
   if (action.type === "NEXT_GAME") {
     // If state is empty (on page load):
-    if (state.list.length === 0) {
-      return update(state, {
-        list: {
-          $push: [
-            {
-              isFetching: false,
-              id: action.payload.id,
-              timeLeft: action.payload.fakeStartDelta,
-              result: null
-            }
-          ]
+    if (state.length === 0) {
+      return [
+        ...state,
+        {
+          id: action.payload.id,
+          timeLeft: action.payload.fakeStartDelta,
+          result: null
         }
-      });
+      ];
     }
     // If first API call has already been made and state has some data:
     else {
-      // If new API call returns info about same game as previous (means we're counting):
+      // And if new API call returns same id as previous (means we're still counting):
       if (
-        action.actionState.list[action.actionState.list.length - 1].id ===
+        action.actionState[action.actionState.length - 1].id ===
         action.payload.id
       ) {
         // Replacing last object in state with info from new API call:
-        return update(state, {
-          list: {
+        if (action.payload.fakeStartDelta === 0) {
+          return update(state, {
+            $splice: [
+              [
+                -1,
+                1,
+                {
+                  id: action.payload.id,
+                  timeLeft: action.payload.fakeStartDelta,
+                  loadingMessage: "Loading...",
+                  result: null
+                }
+              ]
+            ]
+          });
+        } else
+          return update(state, {
             $splice: [
               [
                 -1,
@@ -45,41 +49,30 @@ export function getNextGameReducer(state = initialState, action) {
                 }
               ]
             ]
-          }
-        });
+          });
       }
       // If new API call returns info about new game:
-      // else
-      //   return update(state, {
-      //     list: {
-      //       $push: [
-      //         {
-      //           id: action.payload.id,
-      //           timeLeft: action.payload.fakeStartDelta,
-      //           result: action.payload.result
-      //         }
-      //       ]
-      //     }
-      //   });
+      // else return state;
+      return [
+        ...state,
+        {
+          id: action.payload.id,
+          timeLeft: action.payload.fakeStartDelta,
+          result: action.payload.result
+        }
+      ];
     }
-  } else if (action.type === "GET_RESULT") {
-    return update(state, {
-      list: {
-        $push: [
-          {
-            id: action.payload.id,
-            timeLeft: null,
-            result: action.payload.result,
-            isFetching: false
-          }
-        ]
-      }
-    });
-  } else if (action.type === "SET_LOADING") {
-    return update(state, {
-      isFetching: {
-        $set: action.payload
-      }
-    });
-  } else return state;
+  }
+
+  // else if (action.type === "GET_RESULT") {
+  //   return [
+  //     ...state,
+  //     {
+  //       id: action.payload.id,
+  //       timeLeft: "time from GET_RESULT in reducer",
+  //       result: action.payload.result
+  //     }
+  //   ];
+  // }
+  else return state;
 }

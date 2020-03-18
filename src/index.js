@@ -18,3 +18,5 @@ ReactDOM.render(
   </Provider>,
   document.querySelector("#root")
 );
+
+// rodos, cia per anksti saukia getResultApiAction (result taip is API taip ir rodo null (nors jis gaunamas)). GET_RESULT Action ipushina viena sena objekta i array.

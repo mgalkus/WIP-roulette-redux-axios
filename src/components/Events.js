@@ -1,23 +1,33 @@
 import React from "react";
 import { connect } from "react-redux";
-import { nextGameApiAction, getResultApiAction } from "../actions/apiActions";
-import { setLoading } from "../actions/actions";
+import { nextGameApiAction } from "../actions/apiActions";
 
 class Events extends React.Component {
   componentDidMount() {
     setInterval(() => {
       this.props.nextGameApiAction();
     }, 1000);
+
+    // this.props.apiAction();
+    // let time = 1;
+    // const interval = setInterval(() => {
+    //   this.props.apiAction();
+    //   if (time === 0) {
+    //     clearInterval(interval);
+    //   }
+    //   time--;
+    // }, 1000);
+    // setTimeout(() => {}, 4000);
   }
 
-  componentDidUpdate() {
-    // if (this.props.items[this.props.items.length - 1].timeLeft === 0) {
-    //   this.props.setLoading();
-    // } else
-    if (this.props.items[this.props.items.length - 1].timeLeft === -1) {
-      this.props.getResultApiAction();
-    }
-  }
+  // componentDidUpdate() {
+  //   console.log(this.props.items);
+  //   if (this.props.items[this.props.items.length - 1].timeLeft === 0) {
+  //     setTimeout(() => {
+  //       this.props.getResultApiAction();
+  //     }, 5000);
+  //   }
+  // }
 
   listRender = () => {
     return this.props.items.map(item => {
@@ -28,6 +38,7 @@ class Events extends React.Component {
               Game {item.id}
               {` will start in ` + item.timeLeft}
             </p>
+            <p>{item.loadingMessage}</p>
           </div>
         );
       } else {
@@ -49,11 +60,9 @@ class Events extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  items: state.list
+  items: state
 });
 
 export default connect(mapStateToProps, {
-  nextGameApiAction,
-  getResultApiAction,
-  setLoading
+  nextGameApiAction
 })(Events);

@@ -18,26 +18,23 @@ export function nextGameApiAction() {
   };
 }
 
-export function getResultApiAction() {
-  return (dispatch, getState) => {
-    let gameID = getState().list[getState().list.length - 1].id;
-    console.log(gameID);
+// export function getResultApiAction() {
+//   return (dispatch, getState) => {
+//     let gameID = getState()[getState().length - 1].id;
+//     console.log("IDDDD: " + gameID);
 
-    (async () => {
-      try {
-        const response = await axios.get(
-          `http://dev-games-backend.advbet.com/v1/ab-roulette/1/game/${gameID}`
-        );
-        console.log("gameID" + gameID);
-
-        console.log(response);
-        dispatch(getResultAction(response.data, getState()));
-        return response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    })();
-  };
-}
+//     (async () => {
+//       try {
+//         const response = await axios.get(
+//           `https://dev-games-backend.advbet.com/v1/ab-roulette/1/game/${gameID}`
+//         );
+//         dispatch(getResultAction(response.data, getState()));
+//         return response.data;
+//       } catch (error) {
+//         console.error(error);
+//       }
+//     })();
+//   };
+// }
 
 // export default nextGameApiAction;
