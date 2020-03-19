@@ -1,44 +1,56 @@
 import React from "react";
 import { connect } from "react-redux";
-import { nextGameApiAction } from "../actions/apiActions";
+import { nextGameApiAction, getResultApiAction } from "../actions/apiActions";
+import { decrementAction } from "../actions/actions";
 
 class Events extends React.Component {
-  componentDidMount() {
-    setInterval(() => {
-      this.props.nextGameApiAction();
-    }, 1000);
+  // PROBLEMOS:
+  // - nextGameTimer neideda naujo game'o (kaip ji vel saukti po to kai jis clearinamas componentDidUpdate, bet ir vel ji clearint veliau?)
+  // - decrementAction eina i minusa ir nesiupdate'ina su nauju timeGlobal
+  // - Nerodo rezultato
 
-    // this.props.apiAction();
-    // let time = 1;
-    // const interval = setInterval(() => {
-    //   this.props.apiAction();
-    //   if (time === 0) {
-    //     clearInterval(interval);
-    //   }
-    //   time--;
-    // }, 1000);
-    // setTimeout(() => {}, 4000);
+  // Defining how to call nextGameApiAction() every 1 sec:
+  nextGameTimer = () =>
+    setTimeout(() => {
+      this.props.nextGameApiAction();
+    }, this.props.timeGlobal * 1000);
+
+  componentWillMount() {
+    // Calling nextGameApiAction() again after time left runs out
+    this.nextGameTimeoutID = this.nextGameTimer(); // cache the timeoutID
+
+    // Decrementing every 1 sec
+    const interval = setInterval(() => {
+      this.props.decrementAction();
+    }, 1000);
   }
 
-  // componentDidUpdate() {
-  //   console.log(this.props.items);
-  //   if (this.props.items[this.props.items.length - 1].timeLeft === 0) {
-  //     setTimeout(() => {
-  //       this.props.getResultApiAction();
-  //     }, 5000);
-  //   }
-  // }
+  componentDidUpdate() {
+    // Dont know why:
+    clearTimeout(this.nextGameTimeoutID); // clear the timeoutID
+
+    /// ??? Po pirmo run'o sitas setTimeout runnina gal kas sekunde ir vel updatina state'a, ir vel componentDidUpdate updatinasi, ir taip infinite loop:
+    // setTimeout(() => {
+    //   this.props.getResultApiAction();
+    // }, this.props.timeGlobal * 1000);
+  }
 
   listRender = () => {
     return this.props.items.map(item => {
-      if (!item.result) {
+      if (!item.result && !this.props.message) {
         return (
           <div key={item.id} className="item">
             <p>
-              Game {item.id}
-              {` will start in ` + item.timeLeft}
+              Game {item.id} will start in {this.props.timeGlobal}
             </p>
-            <p>{item.loadingMessage}</p>
+          </div>
+        );
+      } else if (!item.result && this.props.message) {
+        return (
+          <div key={item.id} className="item">
+            <p>
+              Game {item.id} {this.props.message}
+            </p>
           </div>
         );
       } else {
@@ -55,14 +67,24 @@ class Events extends React.Component {
   };
 
   render() {
-    return <div className="product-list-wrapper">{this.listRender()}</div>;
+    return (
+      <div>
+        <div className="product-list-wrapper">{this.listRender()}</div>
+        {/* <p>{this.props.timeGlobal}</p> */}
+        <div id="output"></div>
+      </div>
+    );
   }
 }
 
 const mapStateToProps = state => ({
-  items: state
+  items: state.list,
+  message: state.loadgingMessage,
+  timeGlobal: state.timeLeftGlobal
 });
 
 export default connect(mapStateToProps, {
-  nextGameApiAction
+  nextGameApiAction,
+  decrementAction,
+  getResultApiAction
 })(Events);
